@@ -14,17 +14,27 @@ use App\Models\tag;
 use App\Models\tag_material;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Storage;
 
 class materialsController extends Controller
 {
+
+    // Работа с ещё не выставленными на сайт работами
+
+    // Отправка работы на проверку
+
     public function send_for_approval(materialsRequest $req){
         
         $req->file('material')->store('public/sent_materials');
         $material_name = $req->file('material')->hashName();
         $tags = str_replace(', ', ',', $req->tags);
-        $material = material_for_approval::create(['path' => $material_name, 'users_id' => Auth::user()->id, 'tags' => $tags]);
+
+        $material = material_for_approval::create([
+            'path' => $material_name, 
+            'users_id' => Auth::user()->id, 
+            'tags' => $tags
+        ]);
+
         if ($material) {
             return response()->json(['status' => 200, 'message' => 'Ваш материал был успешно отправлен на проверку']);
         }
@@ -41,6 +51,66 @@ class materialsController extends Controller
 
     }
 
+    public function delete(Request $req)
+    {
+
+        Storage::delete("public/sent_materials/" . material_for_approval::find($req->id)->path);
+        material_for_approval::find($req->id)->delete();
+
+    }
+
+
+    // Принятие работы
+
+    public function approve(approvalRequest $req)
+    {
+
+        $req->file('material')->store('public/approved_materials');
+        $material_name = $req->file('material')->hashName();
+        $original_name = material_for_approval::find($req->material_id)->path;
+
+        $new_material = approved_material::create(
+            array_merge($req->validated(), [
+                'path' => $material_name, 
+                'original_path' => $original_name, 
+                'likes' => 0
+            ]));
+
+        $tags = explode(',', $req->tags);
+
+        // Проверка, если указанные метки уже существуют,
+        // если нет - создание и привязка их к работе,
+        // если да, привязываются существующую
+
+        foreach ($tags as $tag) {
+            $exists = tag::where('tag_name', $tag)->exists();
+            if (!$exists) {
+                tag::create(['tag_name' => $tag]);
+            }
+            $tag_id = tag::where('tag_name', $tag)->get();
+            tag_material::create([
+                'approved_materials_id' => $new_material->id, 
+                'tags_id' => $tag_id[0]->id
+            ]);
+        }
+
+        Storage::move("public/sent_materials/" . $original_name, "public/original_imgs/" . $original_name);
+        material_for_approval::find($req->material_id)->delete();
+
+        Message::create([
+            'approved_materials_id' => $new_material->id, 
+            'users_id' => $new_material->users_id, 
+            'user_send_id' => 0, 
+            'text' => 'Ваша работа была одобрена!'
+        ]);
+
+
+    }
+
+
+    // Работа с одобренными материалами
+
+    // Вывод принатых работ на главной
 
     public function show_in_main()
     {
@@ -52,6 +122,8 @@ class materialsController extends Controller
     }
 
 
+    // Вывод популярных работ на главной
+
     public function show_popular_in_main()
     {
 
@@ -61,6 +133,8 @@ class materialsController extends Controller
     }
 
 
+    // Вывод работ одного автора на его странице
+   
     public function show_users($id)
     {
 
@@ -69,6 +143,8 @@ class materialsController extends Controller
         return materialsResource::collection($materials);
     }
 
+
+    // Вывод понравившихся пользователю работ
 
     public function show_liked($id)
     {
@@ -80,47 +156,11 @@ class materialsController extends Controller
         ->orderBy('approved_materials.id', 'desc')->get();
 
         return materialsResource::collection($materials);
-    }
-
-
-    public function delete(Request $req)
-    {
-
-        Storage::delete("public/sent_materials/" . material_for_approval::find($req->id)->path);
-        material_for_approval::find($req->id)->delete();
 
     }
 
 
-    public function approve(approvalRequest $req)
-    {
-
-        $req->file('material')->store('public/approved_materials');
-        $material_name = $req->file('material')->hashName();
-        $original_name = material_for_approval::find($req->material_id)->path;
-
-        $new_material = approved_material::create(array_merge($req->validated(), ['path' => $material_name, 'original_path' => $original_name, 'likes' => 0]));
-
-        $tags = explode(',', $req->tags);
-
-
-        foreach ($tags as $tag) {
-            $exists = tag::where('tag_name', $tag)->exists();
-            if (!$exists) {
-                tag::create(['tag_name' => $tag]);
-            }
-            $tag_id = tag::where('tag_name', $tag)->get();
-            tag_material::create(['approved_materials_id' => $new_material->id, 'tags_id' => $tag_id[0]->id]);
-        }
-
-        Storage::move("public/sent_materials/" . $original_name, "public/original_imgs/" . $original_name);
-        material_for_approval::find($req->material_id)->delete();
-
-        Message::create(['approved_materials_id' => $new_material->id, 'users_id' => $new_material->users_id, 'user_send_id' => 0, 'text' => 'Ваша работа была одобрена!']);
-
-
-    }
-
+    // Добавить/убрать работу из понравившихся пользователю
 
     public function like(Request $req)
     {
@@ -128,11 +168,21 @@ class materialsController extends Controller
             ['users_id', '=', Auth::user()->id],
             ['approved_materials_id', '=', $req->id],
         ])->exists();
+
         if (!$exists) {
             approved_material::where("id", $req->id)->increment("likes");
-            like::create(['users_id' => Auth::user()->id, 'approved_materials_id' => $req->id]);
+            like::create([
+                'users_id' => Auth::user()->id, 
+                'approved_materials_id' => $req->id
+            ]);
+
             if(Auth::user()->id != $req->user_id){
-                Message::create(['approved_materials_id' => $req->id, 'users_id' => $req->user_id, 'user_send_id' => Auth::user()->id, 'text' => 'Понравилась ваша работа!']);
+                Message::create([
+                    'approved_materials_id' => $req->id, 
+                    'users_id' => $req->user_id, 
+                    'user_send_id' => Auth::user()->id, 
+                    'text' => 'Понравилась ваша работа!'
+                ]);
             }
         } else {
             approved_material::where("id", $req->id)->decrement("likes");
@@ -140,10 +190,12 @@ class materialsController extends Controller
                 ['users_id', '=', Auth::user()->id],
                 ['approved_materials_id', '=', $req->id],
             ])->delete();
+
             $exists = Message::where([
                 ['approved_materials_id', '=', $req->id],
                 ['user_send_id', "=", Auth::user()->id]
             ])->exists();
+            
             if($exists){
                 Message::where([
                     ['approved_materials_id', '=', $req->id],

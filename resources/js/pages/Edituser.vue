@@ -145,12 +145,13 @@
         }, created(){
 
         }, methods: {
+          // Показать имя загруженного файла
           show_name(){
-                this.file_name = this.$refs.pfp.files[0].name
-            },
-            edit(e){
-                e.preventDefault();
-                
+            this.file_name = this.$refs.pfp.files[0].name
+          },
+          edit(e){
+            e.preventDefault();
+              
             this.errors = {
                 nikname: "",
                 email: "",
@@ -160,46 +161,47 @@
             }
             this.success = ''
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios
-            .post("api/edit", {
-                nikname: this.nikname,
-                email: this.email,
-                birthdate: this.birthdate,
-                add_info: this.add_info,
-                pfp: this.$refs.pfp.files[0],
-            },
+              this.$axios
+              .post("api/edit", {
+                  nikname: this.nikname,
+                  email: this.email,
+                  birthdate: this.birthdate,
+                  add_info: this.add_info,
+                  pfp: this.$refs.pfp.files[0],
+              },
               {
                 headers: {
                   "Content-Type": "multipart/form-data",
                 },
               })
-            .then((response) => {
-              console.log(response.data);
-              this.success = 'Данные обновлены!'
-            })
-            .catch((err) => {
-              console.log(err.response.data);
-              if (err.response.data.errors.nikname) {
-                this.errors.nikname = err.response.data.errors.nikname[0];
-              }
-              if (err.response.data.errors.email) {
-                this.errors.email = err.response.data.errors.email[0];
-              }
-              if (err.response.data.errors.birthdate) {
-                this.errors.birthdate = err.response.data.errors.birthdate[0];
-              }
-              if (err.response.data.errors.add_info) {
-                this.errors.add_info = err.response.data.errors.add_info[0];
-              }
-              if (err.response.data.errors.pfp) {
-                this.errors.pfp = err.response.data.errors.pfp[0];
-              }
-              
-            });
+              .then((response) => {
+                console.log(response.data);
+                this.success = 'Данные обновлены!'
+              })
+              .catch((err) => {
+                console.log(err.response.data);
+                if (err.response.data.errors.nikname) {
+                  this.errors.nikname = err.response.data.errors.nikname[0];
+                }
+                if (err.response.data.errors.email) {
+                  this.errors.email = err.response.data.errors.email[0];
+                }
+                if (err.response.data.errors.birthdate) {
+                  this.errors.birthdate = err.response.data.errors.birthdate[0];
+                }
+                if (err.response.data.errors.add_info) {
+                  this.errors.add_info = err.response.data.errors.add_info[0];
+                }
+                if (err.response.data.errors.pfp) {
+                  this.errors.pfp = err.response.data.errors.pfp[0];
+                }
+                
+              });
             });      
-            }
+          }
         },
         beforeRouteEnter(to, from, next) {
+            // Если пользователь не авторизован
             if(!window.Laravel.user ){
                 return next("/");
             }

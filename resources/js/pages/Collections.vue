@@ -227,15 +227,13 @@
             }
         }, created(){
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/getuserscollections').then(response => {
-                this.items = response.data;
-                if(this.items.length <= 0){
-                    document.getElementById('no_works_user').style.display = 'block'
-                }
-            })
-            }); 
-               this.$axios.get("/sanctum/csrf-cookie").then((response) => {  
-            this.$axios.get('api/pakages').then(response => {
+                this.$axios.get('api/getuserscollections').then(response => {
+                    this.items = response.data;
+                    if(this.items.length <= 0){
+                        document.getElementById('no_works_user').style.display = 'block'
+                    }
+                })
+                this.$axios.get('api/pakages').then(response => {
                     this.packages = response.data
                 })
             });      
@@ -245,40 +243,38 @@
                 this.errors = {
                     name: ''
                 }
-             this.$axios.get("/sanctum/csrf-cookie").then((response) => {           
-                this.$axios.post('api/create_collection', {
-                    name: this.collection_name
-                 }).then(response => {
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                    this.$axios.get('api/getuserscollections').then(response => {
-                        this.items = response.data;
-                        document.getElementById('no_works_user').style.display = 'none'
-                    })
-             });                         
-                }).catch((err) => {
-                console.log(err.response.data);
-                if (err.response.data.errors.name) {
-                    this.errors.name = err.response.data.errors.name[0];
-                }
-                });
-             });                     
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {           
+                    this.$axios.post('api/create_collection', {
+                        name: this.collection_name
+                    }).then(response => {
+                        this.$axios.get('api/getuserscollections').then(response => {
+                            this.items = response.data;
+                            document.getElementById('no_works_user').style.display = 'none'
+                        })
+                    }).catch((err) => {
+                        if (err.response.data.errors.name) {
+                            this.errors.name = err.response.data.errors.name[0];
+                        }
+                    });
+                });                     
             },
             delete_collection(item_id){
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/delete_collection', {
-                    id: item_id
-                 }).then(response => {
-                    this.$axios.get('api/getuserscollections').then(response => {
-                        this.items = response.data;
-                        if(this.items.length <= 0){
-                            document.getElementById('no_works_user').style.display = 'block'
-                        }
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/delete_collection', {
+                        id: item_id
+                    }).then(response => {
+                        this.$axios.get('api/getuserscollections').then(response => {
+                            this.items = response.data;
+                            if(this.items.length <= 0){
+                                document.getElementById('no_works_user').style.display = 'block'
+                            }
+                        })
                     })
-                })
-             });                     
+                });                     
             }
         },
         beforeRouteEnter(to, from, next) {
+            // Если пользователь не авторизован
             if(!window.Laravel.user ){
                 return next("/");
             }

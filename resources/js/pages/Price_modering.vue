@@ -80,11 +80,10 @@
             }
         }, created(){
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/prices').then(response => {
-                this.prices = response.data;
-                console.log(this.prices)
-            })
-                });              
+                this.$axios.get('api/prices').then(response => {
+                    this.prices = response.data;
+                })
+            });              
         }, methods: {
             price_change(id, e){
                 let mesgs = document.querySelectorAll('.price_ch_suc_msg')
@@ -96,26 +95,28 @@
                 mesgs[1].innerHTML = ''
                 mesgs[2].innerHTML = ''
                 let new_val = e.target.previousElementSibling.previousElementSibling.value
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post("api/pricechange", {
-                    id: id,
-                    new_val: new_val
-                })
-                .then((response) => {
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post("api/pricechange", {
+                        id: id,
+                        new_val: new_val
+                    })
+                    .then((response) => {
                         e.target.nextElementSibling.innerHTML = 'Цена изменена'
                     })
-                .catch((err) => {
-                    if (err.response.data.errors.new_val) {
-                        e.target.previousElementSibling.innerHTML = err.response.data.errors.new_val[0];
-                    }
-                });
-             });                     
+                    .catch((err) => {
+                        if (err.response.data.errors.new_val) {
+                            e.target.previousElementSibling.innerHTML = err.response.data.errors.new_val[0];
+                        }
+                    });
+                });                     
             }
         },
         beforeRouteEnter(to, from, next) {
+            // Если пользователь не авторизован
             if(!window.Laravel.user ){
                 return next("/");
             }
+            // Если пользователь не администратор
             if(window.Laravel.user.is_admin != 1){
                 return next("/");
             }

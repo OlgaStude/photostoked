@@ -41,9 +41,6 @@
 
 }
 
-#permition{
-    
-}
 #permition_label{
   font-size: 12px;
   margin-left: 10px;
@@ -188,9 +185,10 @@
     },
     created() {},
     methods: {
+      // Показать имя загруженного файла
       show_name(){
-                this.file_name = this.$refs.pfp.files[0].name
-            },
+        this.file_name = this.$refs.pfp.files[0].name
+      },
       register(e) {
         e.preventDefault();
         this.errors = {
@@ -203,22 +201,20 @@
         };
         this.$axios.get("/sanctum/csrf-cookie").then((response) => {
           this.$axios.post("api/register",
-              {
-                nikname: this.nikname,
-                birthdate: this.birthdate,
-                email: this.email,
-                password: this.password,
-                password_confirmation: this.password_confirmation,
-                pfp: this.$refs.pfp.files[0],
+            {
+              nikname: this.nikname,
+              birthdate: this.birthdate,
+              email: this.email,
+              password: this.password,
+              password_confirmation: this.password_confirmation,
+              pfp: this.$refs.pfp.files[0],
+            },
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
               },
-              {
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                },
-              }
-            )
+            })
             .then((response) => {
-              console.log(response);
               if (response.data.status == 200) {
                 window.location.href = "/user/" + response.data.user_id;
               } else {
@@ -246,6 +242,7 @@
       },
     },
     beforeRouteEnter(to, from, next) {
+      // Если пользователь уже авторизован
       if (window.Laravel.isLogged) {
         return next("/user/" + window.Laravel.user.id);
       }

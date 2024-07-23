@@ -112,66 +112,64 @@
             }
         }, created(){
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/pakages').then(response => {
+                this.$axios.get('api/pakages').then(response => {
                     this.packages = response.data
+                })                      
+                this.$axios.get('api/userliked/'+window.Laravel.user.id).then(response => {
+                    this.materials = response.data.data;
+                    this.index = this.materials.length
+                    if(this.index <= 0){
+                        document.getElementById('no_works_user').style.display = 'block'
+                    }
                 })
-              }); 
-             this.$axios.get("/sanctum/csrf-cookie").then((response) => {                          
-            this.$axios.get('api/userliked/'+window.Laravel.user.id).then(response => {
-                console.log(response.data)
-                this.materials = response.data.data;
-                this.index = this.materials.length
-                if(this.index <= 0){
-                    document.getElementById('no_works_user').style.display = 'block'
-                }
-            })
             });                  
             window.addEventListener('scroll', this.handleScroll);
         }, methods: {
             like(id, user_id, e){
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/like', {
-                    id: id,
-                    user_id: user_id
-                 }).then(response => {
-                    if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
-                        e.target.setAttribute('src', '/storage/imgs/like_white.png')
-                    }else{
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
-                        e.target.setAttribute('src', '/storage/imgs/like_red.png')
-                    }
-                     
-            })
-             });                 
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/like', {
+                        id: id,
+                        user_id: user_id
+                    }).then(response => {
+                        if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
+                            e.target.setAttribute('src', '/storage/imgs/like_white.png')
+                        }else{
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
+                            e.target.setAttribute('src', '/storage/imgs/like_red.png')
+                        }
+                        
+                    })
+                });                 
             },
+            // Добавить/убрать работу в/из колекции
             collection_status_change(e){
                 let values = e.target.value.split(',')
                 let collections_id = values[0] 
                 let approved_ms_id = values[1] 
-               this.$axios.get("/sanctum/csrf-cookie").then((response) => {             
-                this.$axios.post('api/collectionstatuschange', {
-                    collections_id: collections_id,
-                    approved_ms_id: approved_ms_id
-                 }).then(response => {
-                    //  alert(response.data)
-                     if(response.data == 'added'){
-                        if(e.target.children[e.target.selectedIndex].children[0].children.length <= 0){
-                            let span = document.createElement('span')
-                            span.innerHTML = " (добавленно)"
-                            e.target.children[e.target.selectedIndex].children[0].appendChild(span)
-                        }else {
-                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {             
+                    this.$axios.post('api/collectionstatuschange', {
+                        collections_id: collections_id,
+                        approved_ms_id: approved_ms_id
+                    }).then(response => {
+                        if(response.data == 'added'){
+                            if(e.target.children[e.target.selectedIndex].children[0].children.length <= 0){
+                                let span = document.createElement('span')
+                                span.innerHTML = " (добавленно)"
+                                e.target.children[e.target.selectedIndex].children[0].appendChild(span)
+                            }else {
+                                e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
+                            }
+                        } else {
+                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
                         }
-                     } else {
-                        e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
-                     }
-                     e.target.selectedIndex = 0
-                })
-              });                    
+                        e.target.selectedIndex = 0
+                    })
+                });                    
             },
         },
         beforeRouteEnter(to, from, next) {
+            // Если пользователь не авторизован
             if(!window.Laravel.user ){
                 return next("/");
             }

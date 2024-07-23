@@ -355,93 +355,92 @@ import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
             Navigation,
         }, created(){
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/maindata').then(response => {
-                this.materials = response.data.data;
-                
-                this.index = this.materials.length
-            })
-            });      
-             this.$axios.get("/sanctum/csrf-cookie").then((response) => {           
-            this.$axios.get('api/maindatapopular').then(response => {
-                console.log(response.data.data)
-                this.materials_popular = response.data.data;
-                this.index_popular = this.materials_popular.length
-            })
-            });      
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/author_').then(response => {
-                this.authors = response.data.data;
-            })
-             });                 
+                this.$axios.get('api/maindata').then(response => {
+                    this.materials = response.data.data;
+                    
+                    this.index = this.materials.length
+                })
+                    
+                this.$axios.get('api/maindatapopular').then(response => {
+                    this.materials_popular = response.data.data;
+                    this.index_popular = this.materials_popular.length
+                })
+                this.$axios.get('api/author_').then(response => {
+                    this.authors = response.data.data;
+                })
+            });                 
             window.addEventListener('scroll', this.handleScroll);
         }, methods: {
+            // Добавить/убрать работу в/из колекции
             collection_status_change(e){
                 let values = e.target.value.split(',')
                 let collections_id = values[0] 
                 let approved_ms_id = values[1] 
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/collectionstatuschange', {
-                    collections_id: collections_id,
-                    approved_ms_id: approved_ms_id
-                 }).then(response => {
-                     if(response.data == 'added'){
-                        if(e.target.children[e.target.selectedIndex].children[0].children.length <= 0){
-                            let span = document.createElement('span')
-                            span.innerHTML = " (добавленно)"
-                            e.target.children[e.target.selectedIndex].children[0].appendChild(span)
-                        }else {
-                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/collectionstatuschange', {
+                        collections_id: collections_id,
+                        approved_ms_id: approved_ms_id
+                    }).then(response => {
+                        if(response.data == 'added'){
+                            if(e.target.children[e.target.selectedIndex].children[0].children.length <= 0){
+                                let span = document.createElement('span')
+                                span.innerHTML = " (добавленно)"
+                                e.target.children[e.target.selectedIndex].children[0].appendChild(span)
+                            }else {
+                                e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
+                            }
+                        } else {
+                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
                         }
-                     } else {
-                        e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
-                     }
-                     e.target.selectedIndex = 0
-                })
-              });                    
+                        e.target.selectedIndex = 0
+                    })
+                });                    
             },
+            // Добавление работ при прокрутке
             handleScroll() {
-            // window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight)
                 if (document.documentElement.scrollTop + window.innerHeight >= document.documentElement.scrollHeight - 140) {
-                    console.log('sees')
+                    // Если this.stop равен true, значит
+                    // болеше нечего загружать
                     if(!this.stop){
                         document.getElementById('loading').style.display = 'flex'
                     }
-                window.removeEventListener('scroll', this.handleScroll)
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/moredata', {
-                    id: this.last_id
-                 }).then(response => {
-                     document.getElementById('loading').style.display = 'none'
-                     if(response.data.data.length > 0){
-
-                         for (let i = 0; i < response.data.data.length; i++) {
-                             this.materials.push(response.data.data[i]);
+                    // Функциа отключается до полного выполения,
+                    // чтобы не загружать одно и тоже несколько раз
+                    window.removeEventListener('scroll', this.handleScroll)
+                    this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                        this.$axios.post('api/moredata', {
+                            id: this.last_id
+                        }).then(response => {
+                            document.getElementById('loading').style.display = 'none'
+                            if(response.data.data.length > 0){
+                                for (let i = 0; i < response.data.data.length; i++) {
+                                    this.materials.push(response.data.data[i]);
+                                    }
+                                    this.index = this.materials.length
+                                    window.addEventListener('scroll', this.handleScroll);
+                            }else{
+                                this.stop = true
                             }
-                            this.index = this.materials.length
-                            window.addEventListener('scroll', this.handleScroll);
-                        }else{
-                            this.stop = true
-                        }
-            })
-             });                 
-            }
+                        })
+                    });                 
+                }
             },
             like(id, user_id, e){
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/like', {
-                    id: id,
-                    user_id: user_id
-                 }).then(response => {
-                    if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
-                        e.target.setAttribute('src', '/storage/imgs/like_white.png')
-                    }else{
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
-                        e.target.setAttribute('src', '/storage/imgs/like_red.png')
-                    }
-                     
-            })
-            });                  
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/like', {
+                        id: id,
+                        user_id: user_id
+                    }).then(response => {
+                        if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
+                            e.target.setAttribute('src', '/storage/imgs/like_white.png')
+                        }else{
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
+                            e.target.setAttribute('src', '/storage/imgs/like_red.png')
+                        }
+                        
+                    })
+                });                  
             },
         }
     }

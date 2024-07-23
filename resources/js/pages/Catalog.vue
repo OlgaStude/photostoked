@@ -273,27 +273,28 @@ import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
                 login_please: false,
                 stop: false
             }
-        }, components: {
+        }, 
+        components: {
             Carousel,
             Slide,
             Pagination,
             Navigation,
-        },created(){
+        }, 
+        created(){
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/maindata').then(response => {
-                console.log(response.data)
-                this.materials = response.data.data;
-                this.index = this.materials.length
-            })
-             });
+                this.$axios.get('api/maindata').then(response => {
+                    this.materials = response.data.data;
+                    this.index = this.materials.length
+                })
+            });
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/tags').then(response => {
-                console.log(response.data)
-                this.tags = response.data
-            })
-             });                 
+                this.$axios.get('api/tags').then(response => {
+                    this.tags = response.data
+                })
+            });                 
             window.addEventListener('scroll', this.handleScroll);
         }, methods: {
+            // Открыть/закрыть окно фильтрации
             filter_open(){
                 if(!this.filter_catalog_open){
                     this.filter_catalog_open = true
@@ -304,61 +305,64 @@ import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
                 }
                 
             },
+            // Добавить/убрать работу в/из колекции
             collection_status_change(e){
                 let values = e.target.value.split(',')
                 let collections_id = values[0] 
                 let approved_ms_id = values[1] 
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/collectionstatuschange', {
-                    collections_id: collections_id,
-                    approved_ms_id: approved_ms_id
-                 }).then(response => {
-                    //  alert(response.data)
-                     if(response.data == 'added'){
-                        if(e.target.children[e.target.selectedIndex].children[0].children.length <= 0){
-                            let span = document.createElement('span')
-                            span.innerHTML = " (добавленно)"
-                            e.target.children[e.target.selectedIndex].children[0].appendChild(span)
-                        }else {
-                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
+                    this.$axios.post('api/collectionstatuschange', {
+                        collections_id: collections_id,
+                        approved_ms_id: approved_ms_id
+                    }).then(response => {
+                        if(response.data == 'added'){
+                            if(e.target.children[e.target.selectedIndex].children[0].children.length <= 0){
+                                let span = document.createElement('span')
+                                span.innerHTML = " (добавленно)"
+                                e.target.children[e.target.selectedIndex].children[0].appendChild(span)
+                            }else {
+                                e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
+                            }
+                        } else {
+                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
                         }
-                     } else {
-                        e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
-                     }
-                     e.target.selectedIndex = 0
-                })
-             });                     
+                        e.target.selectedIndex = 0
+                    })
+                });                      
             },
+            // Добавление работ при прокрутке
             handleScroll() {
-            // window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight)
-            if (document.documentElement.scrollTop + window.innerHeight >= document.documentElement.scrollHeight -140) {
-                if(!this.stop){
+                if (document.documentElement.scrollTop + window.innerHeight >= document.documentElement.scrollHeight -140) {
+                    // Если this.stop равен true, значит
+                    // болеше нечего загружать
+                    if(!this.stop){
                         document.getElementById('loading').style.display = 'flex'
                     }
-                window.removeEventListener('scroll', this.handleScroll)
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/moredata', {
-                    id: this.last_id,
-                    search_word: this.search_word,
-                    tag: this.current_tag,
-                    type: this.type,
-                    format: this.format
-                 }).then(response => {
-                    document.getElementById('loading').style.display = 'none'
-                     if(response.data.data.length > 0){
-
-                         for (let i = 0; i < response.data.data.length; i++) {
-                             this.materials.push(response.data.data[i]);
-                            }
-                            this.index = this.materials.length
-                            window.addEventListener('scroll', this.handleScroll);
-                        }else{
-                            this.stop = true
-                        }
-            window.addEventListener('scroll', this.handleScroll);
-            })
-            });                  
-            }
+                    // Функциа отключается до полного выполения,
+                    // чтобы не загружать одно и тоже несколько раз
+                    window.removeEventListener('scroll', this.handleScroll)
+                    this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                        this.$axios.post('api/moredata', {
+                            id: this.last_id,
+                            search_word: this.search_word,
+                            tag: this.current_tag,
+                            type: this.type,
+                            format: this.format
+                        }).then(response => {
+                            document.getElementById('loading').style.display = 'none'
+                            if(response.data.data.length > 0){
+                                for (let i = 0; i < response.data.data.length; i++) {
+                                    this.materials.push(response.data.data[i]);
+                                    }
+                                    this.index = this.materials.length
+                                    window.addEventListener('scroll', this.handleScroll);
+                                }else{
+                                    this.stop = true
+                                }
+                        window.addEventListener('scroll', this.handleScroll);
+                        })
+                    });                  
+                }
             },
             search(e){
                 this.stop = false
@@ -368,42 +372,39 @@ import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
                 if(e.keyCode == 13){
                     document.getElementById('catalog_back').style.display = 'flex'
                     this.search_word = this.search_bar
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                    this.$axios.post('api/searchword', {
-                        search_word: this.search_word
-                    }).then(response => {
-                        console.log(response.data)
-                        this.materials = response.data.data;
-                        this.index = this.materials.length
-                            
-                    }).catch((err) => {
-                        this.materials = null
-                        this.index = 0
-                        document.getElementById('no_works').style.display = 'block'
-
-                    });
-             });                         
+                    this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                        this.$axios.post('api/searchword', {
+                            search_word: this.search_word
+                        }).then(response => {
+                            this.materials = response.data.data;
+                            this.index = this.materials.length
+                        }).catch((err) => {
+                            this.materials = null
+                            this.index = 0
+                            document.getElementById('no_works').style.display = 'block'
+                        });
+                    });                         
                 }
             },
             filter(e){
                 e.preventDefault()
                 this.stop = false
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/filter', {
-                    format: this.format,
-                    type: this.type,
-                    search_word: this.search_word,
-                    tag: this.current_tag
-                }).then(response => {
-                    this.materials = response.data.data;
-                    this.index = this.materials.length
-                    if(this.index <= 0){
-                        document.getElementById('no_works').style.display = 'block'
-                    }
-                        
-                })
-             });                     
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/filter', {
+                        format: this.format,
+                        type: this.type,
+                        search_word: this.search_word,
+                        tag: this.current_tag
+                    }).then(response => {
+                        this.materials = response.data.data
+                        this.index = this.materials.length
+                        if(this.index <= 0){
+                            document.getElementById('no_works').style.display = 'block'
+                        }  
+                    })
+                });                     
             },
+            // Отмена фильтрации, вывод всех работ
             cancel_filter(e){
                 e.preventDefault()
                 this.format = ''
@@ -411,37 +412,34 @@ import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
                 this.stop = false
                 document.getElementById('no_works').style.display = 'none'
                 if(this.search_word != ''){
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
                     this.$axios.post('api/searchword', {
                         search_word: this.search_word
                     }).then(response => {
-                        console.log(response.data)
-                        this.materials = response.data.data;
+                        this.materials = response.data.data
                         this.index = this.materials.length
-                            
                     })
-              });                        
+                });                        
                 }else if(this.current_tag != ''){
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                    this.$axios.post('api/searchword', {
-                        search_word: this.current_tag
-                    }).then(response => {
-                        console.log(response.data)
-                        this.materials = response.data.data;
-                        this.index = this.materials.length
-                            
-                    })
-            });                          
+                    this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                        this.$axios.post('api/searchword', {
+                            search_word: this.current_tag
+                        }).then(response => {
+                            this.materials = response.data.data;
+                            this.index = this.materials.length
+                                
+                        })
+                    });                          
                 }else{
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                    this.$axios.get('api/maindata').then(response => {
-                    console.log(response.data)
-                    this.materials = response.data.data;
-                    this.index = this.materials.length
-                })
-             });                     
+                    this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                        this.$axios.get('api/maindata').then(response => {
+                            this.materials = response.data.data;
+                            this.index = this.materials.length
+                        })
+                    });                     
                 }
             },
+            // Вывод работ по определённому тегу
             tag_search(e){
                 e.preventDefault();
                 this.stop = false
@@ -449,17 +447,15 @@ import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
                 this.search_word = '';
                 this.search_bar = '';
                 this.current_tag = e.target.innerHTML;
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
                     this.$axios.post('api/searchword', {
-                    search_word: this.current_tag
+                        search_word: this.current_tag
                     }).then(response => {
-                        console.log(response.data)
                         this.materials = response.data.data;
                         this.index = this.materials.length
-                            
+                                
                     })
-             });                         
-                console.log(e.target.innerHTML)
+                });                         
             },
             all_works(){
                 this.search_bar = ''
@@ -470,29 +466,29 @@ import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
                 this.stop = false
                 document.getElementById('catalog_back').style.display = 'none'
                 document.getElementById('no_works').style.display = 'none'
-             this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
-                this.$axios.get('api/maindata').then(response => {
-                    this.materials = response.data.data;
-                    this.index = this.materials.length
-                })
-            });      
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
+                    this.$axios.get('api/maindata').then(response => {
+                        this.materials = response.data.data;
+                        this.index = this.materials.length
+                    })
+                });      
             },
             like(id, user_id, e){
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/like', {
-                    id: id,
-                    user_id: user_id
-                 }).then(response => {
-                    if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
-                        e.target.setAttribute('src', '/storage/imgs/like_white.png')
-                    }else{
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
-                        e.target.setAttribute('src', '/storage/imgs/like_red.png')
-                    }
-                     
-            })
-              });                
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/like', {
+                        id: id,
+                        user_id: user_id
+                    }).then(response => {
+                        if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
+                            e.target.setAttribute('src', '/storage/imgs/like_white.png')
+                        }else{
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
+                            e.target.setAttribute('src', '/storage/imgs/like_red.png')
+                        }
+                        
+                    })
+                });                
             },
         }
     }

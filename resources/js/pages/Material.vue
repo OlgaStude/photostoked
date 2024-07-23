@@ -248,29 +248,26 @@
             }
         }, created(){
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/material/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
-                this.material = response.data.data[0];
-                if(this.material.collections.length > 0){
-                    this.collections_check = true
+                this.$axios.get('api/material/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
+                    this.material = response.data.data[0];
+                    if(this.material.collections.length > 0){
+                        this.collections_check = true
+                    }
+                })
+                // Загрузка данных, если пользователь авторизован
+                if(window.Laravel.user){
+                    this.is_logged = true
+                    this.$axios.get('api/pakages').then(response => {
+                        this.packages = response.data
+                    })
+                    this.user_id = window.Laravel.user.id
+                    this.$axios.get('api/isbought/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
+                        this.is_bought = response.data;
+                    })
                 }
-                console.log(this.material.collections)
-            })
-             });                 
-            if(window.Laravel.user){
-                this.is_logged = true
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.get('api/pakages').then(response => {
-                    this.packages = response.data
-                })
-             });                     
-                this.user_id = window.Laravel.user.id
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.get('api/isbought/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
-                    this.is_bought = response.data;
-                })
-             });                     
-            }
+            });                     
         }, methods: {
+            // Добавить/убрать работу в/из колекции
             collection_status_change(e){
                 let values = e.target.value.split(',')
                 let collections_id = values[0] 
@@ -285,33 +282,32 @@
                             let span = document.createElement('span')
                             span.innerHTML = " (добавленно)"
                             e.target.children[e.target.selectedIndex].children[0].appendChild(span)
-                        }else {
-                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
+                            }else {
+                                e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
+                            }
+                        } else {
+                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
                         }
-                    } else {
-                        e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
-                        console.log(response.data)
-                    }
-                    e.target.selectedIndex = 0
-                })
-            });
+                        e.target.selectedIndex = 0
+                    })
+                });
             },
             like(id, user_id, e){
                 this.$axios.get("/sanctum/csrf-cookie").then((response) => {
                     this.$axios.post('api/like', {
-                    id: id,
-                    user_id: user_id
-                 }).then(response => {
-                    if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
-                        e.target.setAttribute('src', '/storage/imgs/like.png')
-                    }else{
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
-                        e.target.setAttribute('src', '/storage/imgs/like_red.png')
-                    }
-                     
-            })
-        });
+                        id: id,
+                        user_id: user_id
+                    }).then(response => {
+                        if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
+                            e.target.setAttribute('src', '/storage/imgs/like.png')
+                        }else{
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
+                            e.target.setAttribute('src', '/storage/imgs/like_red.png')
+                        }
+                        
+                    })
+                });
         
             },
             download(user_id, material_id){
@@ -320,7 +316,6 @@
                         user_id: user_id,
                         material_id: material_id
                     }).then(response => {
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
                             this.$axios.get('storage/original_imgs/' + this.material.original_path).then(response => {
                             let fileUrl = 'storage/original_imgs/' + this.material.original_path;
                             let fileLink = document.createElement('a');
@@ -333,7 +328,6 @@
                         })
                         
                         this.is_bought = true
-                    });
                     })
                 });
             }

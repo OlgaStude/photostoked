@@ -149,12 +149,12 @@
             }
         }, created(){
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('http://127.0.0.1:8000/api/prices').then(response => {
-                this.prices = response.data;
-                console.log(this.prices)
-            })
+                this.$axios.get('api/prices').then(response => {
+                    this.prices = response.data;
+                })
             });                  
         }, methods: {
+            // Сохранение выбранного пакета в хранилище
             choose_pay(size){
                 switch(size){
                     case('small'):
@@ -173,6 +173,7 @@
             }
         },
         beforeRouteEnter(to, from, next) {
+            // Если пользователь не авторизован
             if(!window.Laravel.user ){
                 return next("/");
             }

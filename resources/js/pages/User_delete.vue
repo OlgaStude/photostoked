@@ -196,46 +196,45 @@
             }
         }, created(){
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/allpeople').then(response => {
-                this.people = response.data;
-            })
-            });      
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/reportedusers').then(response => {
-                this.reported = response.data.data;
-            })
-                      });          
-        }, methods: {
-            delete_report(id){
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/deletereport', {
-                    id: id
-                 }).then(response => {
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                    this.$axios.get('api/reportedusers').then(response => {
+                this.$axios.get('api/allpeople').then(response => {
+                    this.people = response.data;
+                })
+                this.$axios.get('api/reportedusers').then(response => {
                     this.reported = response.data.data;
                 })
-                     });               
-                }).catch(error => {
+            });          
+        }, methods: {
+            delete_report(id){
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/deletereport', {
+                        id: id
+                    }).then(response => {
+                        this.$axios.get('api/reportedusers').then(response => {
+                            this.reported = response.data.data;
+                        })
+                    }).catch(error => {
 
-                })
-                       });             
+                    })
+                });             
             },
+            // Отправить предупреждение
             send_message(id, e){
                 let spans = document.querySelectorAll('.warning_succes')
                 spans.forEach(element => {
                     element.innerHTML = ''
                 });
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/warning', {
-                    id: id
-                 }).then(response => {
-                    e.target.previousElementSibling.previousElementSibling.previousElementSibling.innerHTML = 'Предупреждение отправлено!'
-                }).catch(error => {
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/warning', {
+                        id: id
+                    }).then(response => {
+                        e.target.previousElementSibling.previousElementSibling.previousElementSibling.innerHTML = 'Предупреждение отправлено!'
+                    }).catch(error => {
 
-                })
-                     });               
+                    })
+                });               
             },
+            // Убрать первую кнопку и показать ту, которая
+            // действительно удаляет пользователя
             switch_btn(e){
                 let spans = document.querySelectorAll('.warning_succes')
                 spans.forEach(element => {
@@ -246,25 +245,23 @@
                 e.target.previousElementSibling.previousElementSibling.innerHTML = "Повторно нажмите для подтверждения"
             },
             delete_person(id){
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/deleteperson', {
-                    id: id
-                 }).then(response => {
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                    this.$axios.get('api/allpeople').then(response => {
-                        this.people = response.data;
-                        console.log(this.people)
-                    })
-                     });                   
-                }).catch(error => {
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/deleteperson', {
+                        id: id
+                    }).then(response => {
+                        this.$axios.get('api/allpeople').then(response => {
+                            this.people = response.data;
+                        })
+                    }).catch(error => {
 
-                })
-                    });
+                    })
+                });
             },
+            // Сброс поиска
             find_user(){
                 this.user_name = ''
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/usersearch', {
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/usersearch', {
                         search_word: ''
                     }).then(response => {
                         this.people = response.data;
@@ -273,21 +270,22 @@
                     }).catch(error => {
 
                     })
-                    });
+                });
             },
             make_search(e){
                 if(e.keyCode == 13){
                     document.getElementById('no_works_user').style.display = 'none'
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                    this.$axios.post('api/usersearch', {
-                        search_word: this.user_name
-                    }).then(response => {
-                        this.people = response.data;
-                        if(this.people.length <= 0){
-                            document.getElementById('no_works_user').style.display = 'block'
-                        }
-                    }).catch(error => {
-                    })
+                    this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                        this.$axios.post('api/usersearch', {
+                            search_word: this.user_name
+                        }).then(response => {
+                            this.people = response.data;
+                            if(this.people.length <= 0){
+                                document.getElementById('no_works_user').style.display = 'block'
+                            }
+                        }).catch(error => {
+                            
+                        })
                     });
                 }
 

@@ -123,104 +123,107 @@
             }
         }, created(){
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/collectionitems/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
-                this.materials = response.data.data;
-                this.index = this.materials.length
-                if(this.index <= 0){
-                    document.getElementById('no_works_user').style.display = 'block'
-                }
-            })
-             });
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/collectionname/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
-                this.collection_name = response.data
-            })
-             });                 
-        }, methods: {
-            collection_delete(approved_ms_id){
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/collectionstatuschange', {
-                    collections_id: window.location.href.substring(window.location.href.lastIndexOf('/') + 1),
-                    approved_ms_id: approved_ms_id
-                 }).then(response => {
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {   
-                    this.$axios.get('api/collectionitems/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
-                        this.materials = response.data.data;
-                        this.index = this.materials.length
-                        if(this.index <= 0){
-                            document.getElementById('no_works_user').style.display = 'block'
-                        }
-                    })
-            });                            
+                this.$axios.get('api/collectionitems/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
+                    this.materials = response.data.data;
+                    this.index = this.materials.length
+                    if(this.index <= 0){
+                        document.getElementById('no_works_user').style.display = 'block'
+                    }
                 })
-            });                      
+            });
+            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                this.$axios.get('api/collectionname/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
+                    this.collection_name = response.data
+                })
+            });                 
+        }, methods: {
+            // Удалить из коллекции
+            collection_delete(approved_ms_id){
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/collectionstatuschange', {
+                        collections_id: window.location.href.substring(window.location.href.lastIndexOf('/') + 1),
+                        approved_ms_id: approved_ms_id
+                    }).then(response => {
+                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {   
+                            this.$axios.get('api/collectionitems/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
+                                this.materials = response.data.data;
+                                this.index = this.materials.length
+                                if(this.index <= 0){
+                                    document.getElementById('no_works_user').style.display = 'block'
+                                }
+                            })
+                        });                            
+                    })
+                });                      
             },
             like(id, user_id, e){
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/like', {
-                    id: id,
-                    user_id: user_id
-                 }).then(response => {
-                    if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
-                        e.target.setAttribute('src', '/storage/imgs/like_white.png')
-                    }else{
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
-                        e.target.setAttribute('src', '/storage/imgs/like_red.png')
-                    }
-                     
-            })
-            });      
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/like', {
+                        id: id,
+                        user_id: user_id
+                    }).then(response => {
+                        if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
+                            e.target.setAttribute('src', '/storage/imgs/like_white.png')
+                        }else{
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
+                            e.target.setAttribute('src', '/storage/imgs/like_red.png')
+                        }
+                        
+                    })
+                });      
             },
+            // Добавить/убрать работу в/из колекции
             collection_status_change(e){
                 let values = e.target.value.split(',')
                 let collections_id = values[0] 
                 let approved_ms_id = values[1] 
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/collectionstatuschange', {
-                    collections_id: collections_id,
-                    approved_ms_id: approved_ms_id
-                 }).then(response => {
-                    //  alert(response.data)
-                     if(response.data == 'added'){
-                        if(e.target.children[e.target.selectedIndex].children[0].children.length <= 0){
-                            let span = document.createElement('span')
-                            span.innerHTML = " (добавленно)"
-                            e.target.children[e.target.selectedIndex].children[0].appendChild(span)
-                        }else {
-                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
-                        }
-                     } else {
-                        e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
-              this.$axios.get("/sanctum/csrf-cookie").then((response) => {                      
-                        this.$axios.get('api/collectionitems/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
-                            this.materials = response.data.data;
-                            this.index = this.materials.length
-                            if(this.index <= 0){
-                                document.getElementById('no_works_user').style.display = 'block'
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/collectionstatuschange', {
+                        collections_id: collections_id,
+                        approved_ms_id: approved_ms_id
+                    }).then(response => {
+                        if(response.data == 'added'){
+                            if(e.target.children[e.target.selectedIndex].children[0].children.length <= 0){
+                                let span = document.createElement('span')
+                                span.innerHTML = " (добавленно)"
+                                e.target.children[e.target.selectedIndex].children[0].appendChild(span)
+                            }else {
+                                e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
                             }
-                        })
-             });                             
-                     }
-                     e.target.selectedIndex = 0
-                })
-            });                      
+                        } else {
+                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
+                            this.$axios.get("/sanctum/csrf-cookie").then((response) => {                      
+                                this.$axios.get('api/collectionitems/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
+                                    this.materials = response.data.data;
+                                    this.index = this.materials.length
+                                    if(this.index <= 0){
+                                        document.getElementById('no_works_user').style.display = 'block'
+                                    }
+                                })
+                            });                             
+                        }
+                        e.target.selectedIndex = 0
+                    })
+                });                      
             },
         },
         beforeRouteEnter(to, from, next) {
 
+            // Если пользователь не авторизован
             if(!window.Laravel.user ){
                 return next("/");
             }
+            // Если это не коллекция пользователя
             let user_belogs_here = ''
             axios.get("/sanctum/csrf-cookie").then((response) => {
-            axios.get('api/collectioncheck/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
-                user_belogs_here = response.data
-                if(user_belogs_here == ''){
-                    window.location.href = "/"
-                }
-            })
-             });                 
+                axios.get('api/collectioncheck/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
+                    user_belogs_here = response.data
+                    if(user_belogs_here == ''){
+                        window.location.href = "/"
+                    }
+                })
+            });                 
             next();
         }
     }

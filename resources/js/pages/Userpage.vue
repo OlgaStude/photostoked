@@ -442,102 +442,97 @@
                 login_please: false,
             }
         }, created(){
-                                   this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                    this.$axios.get('api/getuser/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
-                this.owner = response.data;
-            })
-                                });
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/subcheck/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
-                this.subscribed = response.data
-            })
-            });
-                                      this.$axios.get("/sanctum/csrf-cookie").then((response) => {          
-            this.$axios.get('api/usermaterials/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
-                this.materials = response.data.data;
-                this.index = this.materials.length
-                if(this.index <= 0){
-                    document.getElementById('no_works_user').style.display = 'block'
-                }
-            })
-                                });
-            if(window.Laravel.user){
-                this.is_logged = true;
-                
-                this.user = window.Laravel.user
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.get('api/pakages').then(response => {
-                    this.packages = response.data
+                    this.$axios.get('api/getuser/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
+                    this.owner = response.data
                 })
-                                    });
-            }
+                this.$axios.get('api/subcheck/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
+                    this.subscribed = response.data
+                })      
+                this.$axios.get('api/usermaterials/'+window.location.href.substring(window.location.href.lastIndexOf('/') + 1)).then(response => {
+                    this.materials = response.data.data
+                    this.index = this.materials.length
+                    if(this.index <= 0){
+                        document.getElementById('no_works_user').style.display = 'block'
+                    }
+                })
+                if(window.Laravel.user){
+                    this.is_logged = true;
+                    
+                    this.user = window.Laravel.user
+                    this.$axios.get('api/pakages').then(response => {
+                        this.packages = response.data
+                    })
+                }
+            });
+
             window.addEventListener('scroll', this.handleScroll);
 
         }, methods: {
             report_user(){
-                          this.$axios.get("/sanctum/csrf-cookie").then((response) => {              
-                this.$axios.post('api/reportuser', {
-                    id: this.owner.id,
-                 }).then(response => {
-                    document.querySelector('#report_btn p').style.display = 'inline'
-                })
-                      });              
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {              
+                    this.$axios.post('api/reportuser', {
+                        id: this.owner.id,
+                    }).then(response => {
+                        document.querySelector('#report_btn p').style.display = 'inline'
+                    })
+                });              
             },
+            // Переадрессация на страницу банка для снятия средств
             take_money(){
                 localStorage.setItem('pocket_price', 'take')
                 window.location.href = "/bank"
             },
+            // Добавить/убрать работу в/из колекции
             collection_status_change(e){
                 let values = e.target.value.split(',')
                 let collections_id = values[0] 
                 let approved_ms_id = values[1] 
-                         this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
-                this.$axios.post('api/collectionstatuschange', {
-                    collections_id: collections_id,
-                    approved_ms_id: approved_ms_id
-                 }).then(response => {
-                     if(response.data == 'added'){
-                        if(e.target.children[e.target.selectedIndex].children[0].children.length <= 0){
-                            let span = document.createElement('span')
-                            span.innerHTML = " (добавленно)"
-                            e.target.children[e.target.selectedIndex].children[0].appendChild(span)
-                        }else {
-                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
+                    this.$axios.post('api/collectionstatuschange', {
+                        collections_id: collections_id,
+                        approved_ms_id: approved_ms_id
+                    }).then(response => {
+                        if(response.data == 'added'){
+                            if(e.target.children[e.target.selectedIndex].children[0].children.length <= 0){
+                                let span = document.createElement('span')
+                                span.innerHTML = " (добавленно)"
+                                e.target.children[e.target.selectedIndex].children[0].appendChild(span)
+                            }else {
+                                e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(добавленно)"
+                            }
+                        } else {
+                            e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
                         }
-                     } else {
-                        e.target.children[e.target.selectedIndex].children[0].children[0].innerHTML = "(удаленно)"
-                        console.log(response.data)
-                    }
-                     e.target.selectedIndex = 0
-                })
-                     });               
+                        e.target.selectedIndex = 0
+                    })
+                });               
             },
             like(id, user_id, e){
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/like', {
-                    id: id,
-                    user_id: user_id
-                 }).then(response => {
-                    if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
-                        e.target.setAttribute('src', '/storage/imgs/like_white.png')
-                    }else{
-                        e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
-                        e.target.setAttribute('src', '/storage/imgs/like_red.png')
-                    }
-
-            })
-                    });
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/like', {
+                        id: id,
+                        user_id: user_id
+                    }).then(response => {
+                        if(e.target.getAttribute('src') == '/storage/imgs/like_red.png'){
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) - 1
+                            e.target.setAttribute('src', '/storage/imgs/like_white.png')
+                        }else{
+                            e.target.parentElement.nextElementSibling.innerHTML = parseInt(e.target.parentElement.nextElementSibling.innerHTML) + 1
+                            e.target.setAttribute('src', '/storage/imgs/like_red.png')
+                        }
+                    })
+                });
             },
             subscribe(e){
                 e.preventDefault();
-                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-                this.$axios.post('api/follow', {
-                    followed_id: this.owner.id,
-                 }).then(response => {
-                    this.subscribed = !this.subscribed
-            })
-                    });
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {
+                    this.$axios.post('api/follow', {
+                        followed_id: this.owner.id,
+                    }).then(response => {
+                        this.subscribed = !this.subscribed
+                    })
+                });
             }
         }
     }

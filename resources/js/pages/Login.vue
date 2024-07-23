@@ -122,7 +122,6 @@
               password: this.password,
             })
             .then((response) => {
-              console.log(response.data);
               if (response.data.status == 422) {
                 this.errors.password = response.data.message;
               } else if (response.data.status == 200) {
@@ -136,7 +135,6 @@
               }
             })
             .catch((err) => {
-              console.log(err.response.data);
               if (err.response.data.errors.email) {
                 this.errors.email = err.response.data.errors.email[0];
               }
@@ -148,6 +146,7 @@
       },
     },
     beforeRouteEnter(to, from, next) {
+      // Если пользователь уже авторизован
       if (window.Laravel.isLogged) {
         return next("/user/" + window.Laravel.user.id);
       }

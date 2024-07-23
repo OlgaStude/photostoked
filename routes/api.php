@@ -45,16 +45,21 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::get('/testr', [Controller::class, 'testF']);
-
-
+// Авторизация
 Route::post('/register', [userController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
 Route::post('/logout', [UserController::class, 'logout']);
 Route::get('/getuser/{id}', [UserController::class, 'get_user']);
 Route::post('/deleteperson', [UserController::class, 'delete']);
 
+Route::post('/edit', [userController::class, 'updateData']);
+Route::post('/follow', [userController::class, 'follow']);
 
+Route::post('/usersearch', [userController::class, 'find_user']);
+Route::post('/reportuser', [userController::class, 'report_user']);
+Route::post('/deletereport', [userController::class, 'delete_report']);
+
+// Материалы
 Route::post('/sendingmaterial', [materialsController::class, 'send_for_approval']);
 Route::get('/getinadmin', [materialsController::class, 'show_in_admin']);
 Route::post('/delete', [materialsController::class, 'delete']);
@@ -63,11 +68,35 @@ Route::get('/maindata', [materialsController::class, 'show_in_main']);
 Route::get('/maindatapopular', [materialsController::class, 'show_popular_in_main']);
 Route::post('/like', [materialsController::class, 'like']);
 
+// Загрузить больше
 Route::post('/moredata', [mainPageController::class, 'more_data']);
 Route::post('/moredatauser', [mainPageController::class, 'more_user']);
 Route::post('/moredataliked', [mainPageController::class, 'more_liked']);
 
 
+Route::post('/searchword', [filtrationController::class, 'wordSearch']);
+Route::post('/filter', [filtrationController::class, 'filter']);
+
+
+Route::get('/usermaterials/{id}', [materialsController::class, 'show_users']);
+Route::get('/userliked/{id}', [materialsController::class, 'show_liked']);
+
+
+Route::post('/create_collection', [CollectionController::class, 'make']);
+Route::post('/delete_collection', [CollectionController::class, 'delete']);
+Route::post('/collectionstatuschange', [CollectionController::class, 'status_change']);
+
+
+Route::post('/buypakege', [PurchaseController::class, 'buypackege']);
+Route::post('/downloadmaterial', [PurchaseController::class, 'buy']);
+Route::post('/pricechange', [PurchaseController::class, 'price_change']);
+
+
+Route::post('/deletemessage', [MessageController::class, 'delete']);
+Route::post('/warning', [MessageController::class, 'warning']);
+
+
+// Геттеры
 Route::get('/tags', function () {
     $tags = tag::all();
     return $tags;
@@ -158,37 +187,3 @@ Route::get('/reportedusers', function () {
     $reports = Report::all();
     return ReportedResourse::collection($reports);
 });
-
-
-Route::post('/searchword', [filtrationController::class, 'wordSearch']);
-Route::post('/filter', [filtrationController::class, 'filter']);
-
-
-Route::post('/edit', [userController::class, 'updateData']);
-
-
-Route::get('/usermaterials/{id}', [materialsController::class, 'show_users']);
-Route::get('/userliked/{id}', [materialsController::class, 'show_liked']);
-
-
-Route::post('/follow', [userController::class, 'follow']);
-
-
-Route::post('/create_collection', [CollectionController::class, 'make']);
-Route::post('/delete_collection', [CollectionController::class, 'delete']);
-Route::post('/collectionstatuschange', [CollectionController::class, 'status_change']);
-
-
-Route::post('/buypakege', [PurchaseController::class, 'buypackege']);
-Route::post('/downloadmaterial', [PurchaseController::class, 'buy']);
-
-
-Route::post('/deletemessage', [MessageController::class, 'delete']);
-Route::post('/warning', [MessageController::class, 'warning']);
-
-Route::post('/pricechange', [PurchaseController::class, 'price_change']);
-
-Route::post('/usersearch', [userController::class, 'find_user']);
-Route::post('/reportuser', [userController::class, 'report_user']);
-Route::post('/deletereport', [userController::class, 'delete_report']);
-

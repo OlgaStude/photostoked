@@ -34,11 +34,15 @@ class userController extends Controller
 
         $req->file('pfp')->store('public/profile_pics');
         $pfp_name = $req->file('pfp')->hashName();
-        $user = User::create(array_merge($req->validated(), ['password' => Hash::make($req->password), 'path' => $pfp_name, 'followers' => 0, 'money' => 0]));
+        $user = User::create(array_merge($req->validated(), [
+                'password' => Hash::make($req->password), 
+                'path' => $pfp_name, 
+                'followers' => 0, 
+                'money' => 0
+            ]));
 
         if ($user) {
             Auth::login($user);
-            Cookie::make('user', json_encode(auth()->user()), 60);
             return response()->json(['status' => 200, 'message' => 'user is registreted!', 'user_id' => auth()->user()->id, 'is_admin' => auth()->user()->is_admin]);
         }
 
@@ -52,7 +56,6 @@ class userController extends Controller
 
         if (Auth::attempt($formFields)) {
             Cookie::make('user', json_encode(auth()->user()), 60);
-            // $user = json_decode(Cookie::get('user'));
             return response()->json(['status' => 200, 'message' => 'user is logged in!', 'user_id' => auth()->user()->id, 'is_admin' => auth()->user()->is_admin]);
         }
         return response()->json(['status' => 422, 'message' => 'Неверная почта или пароль']);
@@ -61,16 +64,12 @@ class userController extends Controller
 
     public function logout()
     {
-
-        try {
-            Auth::logout();
-            Cookie::forget('user');
-            return response()->json(['status' => 200, 'message' => 'user is logged out!']);
-        } catch (QueryException $e) {
-            return response()->json(['status' => 422, 'message' => $e]);
-        }
+        Auth::logout();
+        return response()->json(['status' => 200, 'message' => 'user is logged out!']);
     }
 
+
+    // Вывод данных одного пользователя
 
     public function get_user($id)
     {
@@ -83,6 +82,8 @@ class userController extends Controller
 
     }
 
+
+    // Обновление данных о пользователе
 
     public function updateData(editRequest $req){
         
@@ -98,7 +99,6 @@ class userController extends Controller
 
             Storage::delete("public/profile_pics/".User::find(Auth::user()->id)->path);
 
-
             User::where("id", Auth::user()->id)->update(["path" => $material_name]);
 
         }
@@ -113,28 +113,51 @@ class userController extends Controller
     }
 
 
+    // Подписаться на/отписаться от пользователя
+
     public function follow(Request $req){
         $exists = Subscription::where([
             ['users_id', '=', Auth::user()->id],
             ['followed_id', '=', $req->followed_id],
         ])->exists();
+
         if(!$exists){
-            Subscription::create(['users_id' => Auth::user()->id, 'followed_id' => $req->followed_id]);
+            Subscription::create([
+                'users_id' => Auth::user()->id, 
+                'followed_id' => $req->followed_id
+            ]);
+
             User::where("id", $req->followed_id)->increment("followers");
-            Message::create(['users_id' => $req->followed_id, 'user_send_id' => Auth::user()->id, 'approved_materials_id' => 0, 'text' => 'добавил вас в избранное']);
+            Message::create([
+                'users_id' => $req->followed_id, 
+                'user_send_id' => Auth::user()->id, 
+                'approved_materials_id' => 0, 
+                'text' => 'добавил вас в избранное'
+            ]);
+
         } else{
             User::where("id", $req->followed_id)->decrement("followers");
             Subscription::where([
                 ['users_id', '=', Auth::user()->id],
                 ['followed_id', '=', $req->followed_id],
             ])->delete();
-            Message::where([['users_id', '=', $req->followed_id], ['user_send_id', '=', Auth::user()->id], ['approved_materials_id', '=', '0']])->delete();
+
+            Message::where([
+                ['users_id', '=', $req->followed_id], 
+                ['user_send_id', '=', Auth::user()->id], 
+                ['approved_materials_id', '=', '0']
+            ])->delete();
 
         }
     }
 
+
+    // Полное удаление пользователя и всех данных о нём
+
     public function delete(Request $req){
         Bought::where('users_id', '=', $req->id)->delete();
+
+        // Удаление всех лайков пользователя
         $likes = like::where('users_id', '=', $req->id)->get();
 
         foreach($likes as $like){
@@ -155,6 +178,10 @@ class userController extends Controller
         foreach($collections as $collection){
             Collection_items::where('collections_id', '=', $collection->id)->delete();
         }
+
+
+        // Удаление всех работ пользователя и взаимодействий
+        // других пользователей с ними
         Collection::where('users_id', '=', $req->id)->delete();
 
         $materials = approved_material::where('users_id', '=', $req->id)->get();
@@ -162,6 +189,9 @@ class userController extends Controller
             Bought::where('approved_materials_id', '=', $material->id)->delete();
             like::where('approved_materials_id', '=', $material->id)->delete();
 
+
+            // Если метки работ пользователя больше нигде не
+            // используются - они удаляются
             $tag_check = tag_material::where('approved_materials_id', '=', $material->id)->get();
             tag_material::where('approved_materials_id', '=', $material->id)->delete();
 
@@ -179,8 +209,9 @@ class userController extends Controller
     }
 
 
-    public function find_user(Request $req){
+    // Поис пользователя  в поисковой строке
 
+    public function find_user(Request $req){
 
         if($req->search_word == ''){
             $authors = User::get();
@@ -196,10 +227,16 @@ class userController extends Controller
 
     public function report_user(Request $req){
 
-        $exists = Report::where([['users_id', '=', $req->id], ['user_send_id', '=', Auth::user()->id]])->exists();
+        $exists = Report::where([
+            ['users_id', '=', $req->id], 
+            ['user_send_id', '=', Auth::user()->id]
+        ])->exists();
 
         if(!$exists){
-            Report::create(['users_id' => $req->id, 'user_send_id' => Auth::user()->id]);
+            Report::create([
+                'users_id' => $req->id, 
+                'user_send_id' => Auth::user()->id
+            ]);
         }
 
 

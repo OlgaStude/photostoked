@@ -7,7 +7,7 @@
             </div>
             <div class="header_right">
                 <a v-if="user.is_admin" href="/admin"><p class="header_p_first-tier">Панель</p></a>
-                <a href="" @click="show_sending_form"><p class="header_p_first-tier">Предложить материал</p></a>
+                <a href="" @click="form_header_is_on == true"><p class="header_p_first-tier">Предложить материал</p></a>
                 <a href="/pockets"><p class="header_p_first-tier">Приобрести пакеты</p></a>
                 <a href="#" @click="logout"><p class="header_p_first-tier">Выйти</p></a>
                 <span v-if="messages.length > 0"><img  @click="show_messages = !show_messages" id="header_bell" :src="'/storage/imgs/bell_icon.png'" alt=""></span>
@@ -54,7 +54,7 @@
             <button id="send_btn" type="submit" @click="send_material">
                 Отправить на прорверку
             </button>
-            <button id="close_form_btn" @click="close_form">
+            <button id="close_form_btn" @click="form_header_is_on == false">
                 Закрыть
             </button>
             <p id="form_success">{{ success_message }}</p>
@@ -426,55 +426,48 @@ footer{
         created(){
             if(window.Laravel.isLogged){
                 this.isLogged = true
-                this.$axios.get('http://127.0.0.1:8000/api/messages').then(response => {
-                    this.messages = response.data.data
-                    if(this.messages.length > 0){
-                        this.messages_exists = true
-                    } else{
-                        this.no_messages = 'Уведомлений нет'
-                    }
-                })
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
+                    this.$axios.get('api/messages').then(response => {
+                        this.messages = response.data.data
+                        if(this.messages.length > 0){
+                            this.messages_exists = true
+                        } else{
+                            this.no_messages = 'Уведомлений нет'
+                        }
+                    })
+                });                                      
             }
         }, methods: {
+            // Показать имя загруженного файла
             show_name(){
                 this.file_name = this.$refs.material.files[0].name
             },
             message_delete(id){
-                this.$axios.post('http://127.0.0.1:8000/api/deletemessage', {
-                    id: id
-                 }).then(response => {
-                    this.$axios.get('http://127.0.0.1:8000/api/messages').then(response => {
-                        this.messages = response.data.data
-                        if(this.messages.length == 0){
-                            this.messages_exists = false
-                            this.no_messages = 'Уведомлений нет'
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
+                    this.$axios.post('api/deletemessage', {
+                        id: id
+                    }).then(response => {
+                        this.$axios.get('api/messages').then(response => {
+                            this.messages = response.data.data
+                            if(this.messages.length == 0){
+                                this.messages_exists = false
+                                this.no_messages = 'Уведомлений нет'
+                            }
+                        })
+                    }).catch(error => {
 
-                        }
                     })
-                }).catch(error => {
-
-                })
+                });                                                      
             },
             logout (e) {
-              e.preventDefault();
-              this.$axios.get('/sanctum/csrf-cookie').then(response => {
-                this.$axios.post('http://127.0.0.1:8000/api/logout').then(response => {
-                    if(response.data.status == 200){
-                        window.location.href = '/';
-                    } else {
-                        console.log(response)
-                    }
-                }).catch(error => {
-                    console.error(error)
-                })
-              });  
-            },
-            show_sending_form(e) {
                 e.preventDefault();
-                this.form_header_is_on = true
-            },
-            close_form() {
-                this.form_header_is_on = false
+                this.$axios.get('/sanctum/csrf-cookie').then(response => {
+                    this.$axios.post('api/logout').then(response => {
+                        window.location.href = '/';
+                    }).catch(error => {
+                        
+                    })
+                });  
             },
             send_material(e){
                 e.preventDefault();
@@ -483,33 +476,30 @@ footer{
                     material: null
                 }
                 this.success_message = ''
-                this.$axios
-            .request({
-                url: "http://127.0.0.1:8000/api/sendingmaterial",
-                method: "POST",
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                },
-                data: {
-                    tags: this.tags,
-                    material: this.$refs.material.files[0],
-                }
-            }).then(response => {
-                        console.log(response.data)
-                    if(response.data.status == 200){
-                        this.success_message = response.data.message;
-                        this.tags = ''
-                    } else {
-                        console.log(response)
-                    }
-                }).catch(err => {
-                    if (err.response.data.errors.tags) {
-                        this.errors.tags = err.response.data.errors.tags[0];
-                    }
-                    if (err.response.data.errors.material) {
-                        this.errors.material = err.response.data.errors.material[0];
-                    }
-                })
+                this.$axios.get('/sanctum/csrf-cookie').then(response => {
+                    this.$axios
+                    .request({
+                        url: "http://127.0.0.1:8000/api/sendingmaterial",
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        },
+                        data: {
+                            tags: this.tags,
+                            material: this.$refs.material.files[0],
+                        }
+                    }).then(response => {
+                            this.success_message = response.data.message;
+                            this.tags = ''
+                    }).catch(err => {
+                        if (err.response.data.errors.tags) {
+                            this.errors.tags = err.response.data.errors.tags[0];
+                        }
+                        if (err.response.data.errors.material) {
+                            this.errors.material = err.response.data.errors.material[0];
+                        }
+                    })
+                });                  
             }
 
         },

@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Auth;
 
 class mainPageController extends Controller
 {
+
+    // Загрузка большего колличества изображений
+    // для главной и для каталога
     
     public function more_data(Request $req){
         if ($req->search_word != '') {
@@ -269,6 +272,8 @@ class mainPageController extends Controller
         return materialsResource::collection($materials);
     }
 
+    // Загрузка большего колличества изображений
+    // на странице пользователя
 
     public function more_user(Request $req){
         $materials = approved_material::where([
@@ -279,6 +284,8 @@ class mainPageController extends Controller
         
     }
 
+    // Загрузка большего колличества изображений
+    // на странице с понравившимися работами
 
     public function more_liked(Request $req){
         $materials = Like::join('users', 'users.id', '=', 'likes.users_id')

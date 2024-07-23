@@ -251,62 +251,59 @@
             }
         }, created(){
               this.$axios.get("/sanctum/csrf-cookie").then((response) => {                          
-            this.$axios.get('api/getinadmin').then(response => {
-                this.materials = response.data.data;
-                console.log(response.data)
-                this.index = this.materials.length
-                for(let i =0; i < this.materials.length; i++){
-                    this.type[i] = 'illustration'
-                    this.format[i] = 'vertical'
-                    this.errors.tags[i] = '';
-                    this.errors.material[i] = '';
-                    this.file_name[i] = 'Материал'
-                }
-            })
-            });                  
-        }, methods: {
-            show_name(i){
-                this.file_name[i-1] = this.$refs.watermarked_version[i-1].files[0].name
-            },
-            download(path){
-             this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
-                this.$axios.get('storage/sent_materials/' + path).then(response => {
-                    let fileUrl = 'storage/sent_materials/' + path;
-                    console.log(fileUrl);
-                    let fileLink = document.createElement('a');
-                    fileLink.href = fileUrl;
-
-                    fileLink.setAttribute('download', path);
-                    document.body.appendChild(fileLink)
-
-                    fileLink.click();
-            })
-             });                 
-            },
-            delete_function(id) {
-             this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
-                this.$axios.post('api/delete', {
-                    id: id
-                }).then((response) => {
-                    console.log(response);
-             this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
-                    this.$axios.get('api/getinadmin').then(response => {
-                        this.materials = response.data.data;
-                        this.index = this.materials.length
-                        document.querySelector('#type_select').value = 'illustration'
-                        document.querySelector('#format_select').value = 'vertical'
-                        for(let i =0; i < this.materials.length; i++){
+                this.$axios.get('api/getinadmin').then(response => {
+                    this.materials = response.data.data;
+                    this.index = this.materials.length
+                    for(let i =0; i < this.materials.length; i++){
                         this.type[i] = 'illustration'
                         this.format[i] = 'vertical'
                         this.errors.tags[i] = '';
                         this.errors.material[i] = '';
                         this.file_name[i] = 'Материал'
-
                     }
                 })
-             });                     
-                })
-             });                     
+            });                  
+        }, methods: {
+            // Отображение имени загруженного файла 
+            show_name(i){
+                this.file_name[i-1] = this.$refs.watermarked_version[i-1].files[0].name
+            },
+            download(path){
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
+                    this.$axios.get('storage/sent_materials/' + path).then(response => {
+                        let fileUrl = 'storage/sent_materials/' + path;
+                        let fileLink = document.createElement('a');
+                        fileLink.href = fileUrl;
+
+                        fileLink.setAttribute('download', path);
+                        document.body.appendChild(fileLink)
+
+                        fileLink.click();
+                    })
+                });                 
+            },
+            delete_function(id) {
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
+                    this.$axios.post('api/delete', {
+                        id: id
+                    }).then((response) => {
+                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
+                            this.$axios.get('api/getinadmin').then(response => {
+                                this.materials = response.data.data;
+                                this.index = this.materials.length
+                                document.querySelector('#type_select').value = 'illustration'
+                                document.querySelector('#format_select').value = 'vertical'
+                                for(let i =0; i < this.materials.length; i++){
+                                    this.type[i] = 'illustration'
+                                    this.format[i] = 'vertical'
+                                    this.errors.tags[i] = '';
+                                    this.errors.material[i] = '';
+                                    this.file_name[i] = 'Материал'
+                                }
+                            })
+                        });                     
+                    })
+                });                     
             },
             onChangeType(e, id){
                 this.type[id -1] = e.target.value
@@ -316,68 +313,68 @@
             },
             approve(material_id, user_id, index){
                 
-                // console.log(this.$refs['tags'][id-1].value)
-                console.log(index - 1)
-                
                 this.errors = {
                     tags: [],
                     material: []
                 }
-               this.$axios.get("/sanctum/csrf-cookie").then((response) => {                             
-                this.$axios.post("api/approve",
-                {
-                    users_id: user_id,
-                    material: this.$refs['watermarked_version'][index-1].files[0],
-                    material_id: material_id,
-                    format: this.format[index-1],
-                    type: this.type[index -1],
-                    tags: this.$refs['tags'][index-1].value
-                },
-                {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-                }
-                )
-                .then((response) => {
-                    console.log(response);
-             this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
-                    this.$axios.get('api/getinadmin').then(response => {
-                        this.materials = response.data.data;
-                        this.index = this.materials.length
-                        document.querySelector('#type_select').value = 'illustration'
-                        document.querySelector('#format_select').value = 'vertical'
-                        for(let i =0; i < this.materials.length; i++){
-                            this.type[i] = 'illustration'
-                            this.format[i] = 'vertical'
-                            this.errors.tags[i] = '';
-                            this.errors.material[i] = '';
-                            this.$refs['tags'][index-1].value = null
-                            this.file_name[i] = 'Материал'
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {                             
+                    this.$axios.post("api/approve",
+                    {
+                        users_id: user_id,
+                        material: this.$refs['watermarked_version'][index-1].files[0],
+                        material_id: material_id,
+                        format: this.format[index-1],
+                        type: this.type[index -1],
+                        tags: this.$refs['tags'][index-1].value
+                    },
+                    {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                    }
+                    )
+                    .then((response) => {
+                        this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
+                            this.$axios.get('api/getinadmin').then(response => {
+                                this.materials = response.data.data;
+                                this.index = this.materials.length
+                                document.querySelector('#type_select').value = 'illustration'
+                                document.querySelector('#format_select').value = 'vertical'
+                                for(let i =0; i < this.materials.length; i++){
+                                    this.type[i] = 'illustration'
+                                    this.format[i] = 'vertical'
+                                    this.errors.tags[i] = '';
+                                    this.errors.material[i] = '';
+                                    this.$refs['tags'][index-1].value = null
+                                    this.file_name[i] = 'Материал'
 
+                                }
+                            })
+                        });      
+                    })
+                    .catch((err) => {
+                        if (err.response.data.errors.tags) {
+                            this.errors.tags[index-1] = err.response.data.errors.tags[0];
                         }
-                })
-            });      
-                })
-                .catch((err) => {
-                    if (err.response.data.errors.tags) {
-                        this.errors.tags[index-1] = err.response.data.errors.tags[0];
-                    }
-                    if (err.response.data.errors.material) {
-                        this.errors.material[index-1] = err.response.data.errors.material[0];
-                    }
-                    
-                });
-             });                     
+                        if (err.response.data.errors.material) {
+                            this.errors.material[index-1] = err.response.data.errors.material[0];
+                        }
+                        
+                    });
+                });                     
             },
             incrimentIndex(){
                 this.index++
             }
         },
         beforeRouteEnter(to, from, next) {
+
+            // Если пользователь не авторизован
             if(!window.Laravel.user ){
                 return next("/");
             }
+
+            // Если пользователь не администратор
             if(window.Laravel.user.is_admin != 1){
                 return next("/");
             }

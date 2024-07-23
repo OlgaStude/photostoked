@@ -126,22 +126,21 @@
             }
         }, created(){
             this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/subs').then(response => {
-                this.subs = response.data.data;
-                if(this.subs.length <= 0){
-                    document.getElementById('no_works_user').style.display = 'block'
-                }
-            })
-            });   
-            this.$axios.get("/sanctum/csrf-cookie").then((response) => {
-            this.$axios.get('api/pakages').then(response => {
+                this.$axios.get('api/subs').then(response => {
+                    this.subs = response.data.data;
+                    if(this.subs.length <= 0){
+                        document.getElementById('no_works_user').style.display = 'block'
+                    }
+                })
+                this.$axios.get('api/pakages').then(response => {
                     this.packages = response.data
                 })
-             });                     
+            });                     
         }, methods: {
             
         },
         beforeRouteEnter(to, from, next) {
+            // Если пользователь не авторизован
             if(!window.Laravel.user ){
                 return next("/");
             }

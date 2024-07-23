@@ -188,18 +188,21 @@
                 prices: null
             }
         }, created(){
+            // Проверка, если пользователь желает снять деньги
+            // или купить пакеты 
             if(localStorage.getItem('pocket_price') != 'take'){
                 this.size = localStorage.getItem('pocket_price')
             }
-             this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
-            this.$axios.get('api/prices').then(response => {
-                this.prices = response.data;
-            })
-             });                 
+            this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
+                this.$axios.get('api/prices').then(response => {
+                    this.prices = response.data;
+                })
+            });                 
         }, methods: {
             upper_case(){
                 this.name = this.name.toUpperCase()
             },
+            // Добовляет пробелы на поле с номером карты
             space(){
                 let new_str = this.card.replaceAll(' ','').split('')
 
@@ -224,6 +227,7 @@
                 document.getElementById('year').classList.remove('error_input')
                 document.getElementById('name').classList.remove('error_input')
                 document.getElementById('cvc').classList.remove('error_input')
+
                 let ammount = 0
                 switch(localStorage.getItem('pocket_price')){
                     case(this.prices[2].price.toString()):
@@ -239,64 +243,68 @@
                         ammount = 'take' 
                         break;
                 }
+                // Проверка на правильность введёного имени владельца
                 if(!/\b[a-zA-Z]+\s[a-zA-Z]+\b/.test(this.name)){
                     this.errors.name = 'Некорректно заполнено поле';
                     document.getElementById('name').className = 'error_input';
                     return;
                 }
-             this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
-                this.$axios.post('api/buypakege', {
-                    card: this.card.replace(' ',''),
-                    month: this.month,
-                    year: this.year,
-                    name: this.name,
-                    cvc: this.cvc,
-                    ammount: ammount
-                 }).then(response => {
-                    localStorage.removeItem('pocket_price')
-                    this.success_msg = 'Опперация прошла успешно!'
-                    setTimeout(() => window.location.href = "/user/" + window.Laravel.user.id, 2000);
+                this.$axios.get("/sanctum/csrf-cookie").then((response) => {               
+                    this.$axios.post('api/buypakege', {
+                        card: this.card.replace(' ',''),
+                        month: this.month,
+                        year: this.year,
+                        name: this.name,
+                        cvc: this.cvc,
+                        ammount: ammount
+                    }).then(response => {
+                        localStorage.removeItem('pocket_price')
+                        this.success_msg = 'Опперация прошла успешно!'
+                        setTimeout(() => window.location.href = "/user/" + window.Laravel.user.id, 2000);
 
-                }).catch((err) => {
-                    if (err.response.data.errors.card) {
-                        document.getElementById('card').className = 'error_input';
-                    }
-                    if (err.response.data.errors.month) {
-                        document.getElementById('month').className = 'error_input';
-                    }
-                    if (err.response.data.errors.year) {
-                        document.getElementById('year').className = 'error_input';
-                    }
-                    if (err.response.data.errors.name) {
-                        document.getElementById('name').className = 'error_input';
-                    }
-                    if (err.response.data.errors.cvc) {
-                        document.getElementById('cvc').className = 'error_input';
-                    }
+                    }).catch((err) => {
+                        if (err.response.data.errors.card) {
+                            document.getElementById('card').className = 'error_input';
+                        }
+                        if (err.response.data.errors.month) {
+                            document.getElementById('month').className = 'error_input';
+                        }
+                        if (err.response.data.errors.year) {
+                            document.getElementById('year').className = 'error_input';
+                        }
+                        if (err.response.data.errors.name) {
+                            document.getElementById('name').className = 'error_input';
+                        }
+                        if (err.response.data.errors.cvc) {
+                            document.getElementById('cvc').className = 'error_input';
+                        }
 
-                    if (err.response.data.errors.card) {
-                        this.errors.card = err.response.data.errors.card[0];
-                    }
-                    else if (err.response.data.errors.month) {
-                        this.errors.month = err.response.data.errors.month[0];
-                    }
-                    else if (err.response.data.errors.year) {
-                        this.errors.year = err.response.data.errors.year[0];
-                    }
-                    if (err.response.data.errors.name) {
-                        this.errors.name = err.response.data.errors.name[0];
-                    }
-                    else if (err.response.data.errors.cvc) {
-                        this.errors.cvc = err.response.data.errors.cvc[0];
-                    }
-                });
-             });                     
+                        if (err.response.data.errors.card) {
+                            this.errors.card = err.response.data.errors.card[0];
+                        }
+                        else if (err.response.data.errors.month) {
+                            this.errors.month = err.response.data.errors.month[0];
+                        }
+                        else if (err.response.data.errors.year) {
+                            this.errors.year = err.response.data.errors.year[0];
+                        }
+                        if (err.response.data.errors.name) {
+                            this.errors.name = err.response.data.errors.name[0];
+                        }
+                        else if (err.response.data.errors.cvc) {
+                            this.errors.cvc = err.response.data.errors.cvc[0];
+                        }
+                    });
+                });                     
             }
         },
         beforeRouteEnter(to, from, next) {
+
+            // Если пользователь не авторизован
             if(!window.Laravel.user ){
                 return next("/");
             }
+
             if(localStorage.getItem('pocket_price') == null || localStorage.getItem('pocket_price') == undefined){
                 return next("/");
             }

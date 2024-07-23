@@ -41,6 +41,7 @@ class filtrationController extends Controller
         }
     }
 
+    // Фильтр с учётом всех позакателей
 
     public function filter(Request $req)
     {
