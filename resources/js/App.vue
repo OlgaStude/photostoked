@@ -7,7 +7,7 @@
             </div>
             <div class="header_right">
                 <a v-if="user.is_admin" href="/admin"><p class="header_p_first-tier">Панель</p></a>
-                <a href="" @click="form_header_is_on == true"><p class="header_p_first-tier">Предложить материал</p></a>
+                <a href="#" @click="form_header_is_on = true"><p class="header_p_first-tier">Предложить материал</p></a>
                 <a href="/pockets"><p class="header_p_first-tier">Приобрести пакеты</p></a>
                 <a href="#" @click="logout"><p class="header_p_first-tier">Выйти</p></a>
                 <span v-if="messages.length > 0"><img  @click="show_messages = !show_messages" id="header_bell" :src="'/storage/imgs/bell_icon.png'" alt=""></span>
@@ -54,7 +54,7 @@
             <button id="send_btn" type="submit" @click="send_material">
                 Отправить на прорверку
             </button>
-            <button id="close_form_btn" @click="form_header_is_on == false">
+            <button id="close_form_btn" @click="form_header_is_on = false">
                 Закрыть
             </button>
             <p id="form_success">{{ success_message }}</p>
