@@ -19,7 +19,6 @@ use App\Models\Subscription;
 use App\Models\tag;
 use App\Models\tag_material;
 use App\Models\User;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
@@ -172,6 +171,8 @@ class userController extends Controller
         Pockets::where('users_id', '=', $req->id)->delete();
         Subscription::where('users_id', '=', $req->id)->delete();
         Subscription::where('followed_id', '=', $req->id)->delete();
+        Report::where('users_id', '=', $req->id)->delete();
+        Report::where('user_send_id', '=', $req->id)->delete();
 
         $collections = Collection::where('users_id', '=', $req->id)->get();
 
