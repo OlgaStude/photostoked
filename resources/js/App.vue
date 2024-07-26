@@ -7,7 +7,7 @@
             </div>
             <div class="header_right">
                 <a v-if="user.is_admin" href="/admin"><p class="header_p_first-tier">Панель</p></a>
-                <a href="#" @click="form_header_is_on = true"><p class="header_p_first-tier">Предложить материал</p></a>
+                <a href="#" @click="openform"><p class="header_p_first-tier">Предложить материал</p></a>
                 <a href="/pockets"><p class="header_p_first-tier">Приобрести пакеты</p></a>
                 <a href="#" @click="logout"><p class="header_p_first-tier">Выйти</p></a>
                 <span v-if="messages.length > 0"><img  @click="show_messages = !show_messages" id="header_bell" :src="'/storage/imgs/bell_icon.png'" alt=""></span>
@@ -438,6 +438,10 @@ footer{
                 });                                      
             }
         }, methods: {
+            openform(e){
+                e.preventDefault()
+                this.form_header_is_on = true
+            },
             // Показать имя загруженного файла
             show_name(){
                 this.file_name = this.$refs.material.files[0].name

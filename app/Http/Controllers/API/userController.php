@@ -215,12 +215,15 @@ class userController extends Controller
     public function find_user(Request $req){
 
         if($req->search_word == ''){
-            $authors = User::get();
+            $authors = User::where('nikname', '<>', 'Admin')->get();
 
             return $authors;
         }
 
-        $authors = User::where('nikname', 'LIKE', '%' . $req->search_word . '%')->get();
+        $authors = User::where([
+            ['nikname', 'LIKE', '%' . $req->search_word . '%'],
+            ['nikname', '<>', 'Admin']
+            ])->get();
 
         return $authors;
 

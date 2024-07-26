@@ -19,7 +19,7 @@
                     </div>
                     <div class="buttons_user_del">
                         <span class="warning_succes"></span>
-                        <button class="user_delete_full" @click="delete_person(person.id)">Удалить</button>
+                        <button class="user_delete_full" @click="delete_person(person.id, $event)">Удалить</button>
                         <button class="user_delete_" @click="switch_btn($event)">Удалить</button>
                         <button class="user_warning" @click="send_message(person.id, $event)">Предупреждение</button>
                     </div>
@@ -244,13 +244,15 @@
                 e.target.previousElementSibling.style.display = 'block'
                 e.target.previousElementSibling.previousElementSibling.innerHTML = "Повторно нажмите для подтверждения"
             },
-            delete_person(id){
+            delete_person(id, e){
                 this.$axios.get("/sanctum/csrf-cookie").then((response) => {
                     this.$axios.post('api/deleteperson', {
                         id: id
                     }).then(response => {
                         this.$axios.get('api/allpeople').then(response => {
+                            e.target.previousElementSibling.innerHTML = ""
                             this.people = response.data;
+
                         })
                     }).catch(error => {
 
