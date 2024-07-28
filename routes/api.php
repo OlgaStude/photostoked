@@ -166,12 +166,12 @@ Route::get('/messages', function () {
     return MessageResource::collection($messages);
 });
 Route::get('/author_', function () {
-    $authors = User::orderBy('followers', 'asc')->where('nikname', '<>', 'Admin')->paginate(9);
+    $authors = User::orderBy('followers', 'asc')->where('is_admin', '=', 0)->paginate(9);
 
     return $authors;
 });
 Route::get('/allpeople', function () {
-    $authors = User::where('nikname', '<>', 'Admin')->get();
+    $authors = User::where('is_admin', '=', 0)->get();
 
     return $authors;
 });
